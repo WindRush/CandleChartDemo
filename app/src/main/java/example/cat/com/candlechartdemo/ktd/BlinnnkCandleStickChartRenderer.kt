@@ -15,7 +15,7 @@ import com.github.mikephil.charting.utils.*
  * @description: 蜡烛绘制的逻辑
  */
 
-class BLCandleStickChartRendererKT(
+class BlinnnkCandleStickChartRenderer(
   protected var mChart: CandleDataProvider,
   animator: ChartAnimator,
   viewPortHandler: ViewPortHandler

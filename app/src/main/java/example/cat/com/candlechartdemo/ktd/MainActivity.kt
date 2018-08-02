@@ -14,27 +14,10 @@ import org.jetbrains.anko.design.tabLayout
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
-  private lateinit var candleStickChart: BLCandleStickChartKT
+  private lateinit var candleStickChart: BlinnnkCandleStickChart
   internal var labelColor: Int = Color.rgb(152, 152, 152)
   private var dataSet = mutableListOf<Array<String>>()
   private val candleEntrySet = mutableListOf<CandleEntry>()
-  
-  private var intervalSet = arrayListOf(
-    "1m",
-    "3m",
-    "5m",
-    "15m",
-    "30m",
-    "1h",
-    "2h",
-    "4h",
-    "6h",
-    "8h",
-    "12h",
-    "1d",
-    "3d",
-    "1w",
-    "1M")
   
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -46,10 +29,10 @@ class MainActivity : AppCompatActivity() {
         setTabTextColors(labelColor,Color.rgb(67, 200, 135))
         setSelectedTabIndicatorColor(Color.rgb(67, 200, 135))
         setSelectedTabIndicatorHeight(Utils.convertDpToPixel(2f).toInt())
-        for (interval in intervalSet) {
+        for (interval in IntervalEnum.values()) {
           val tab = newTab()
-          tab.setText(interval)
-          tab.setTag(interval)
+          tab.setText(interval.interval)
+          tab.setTag(interval.interval)
           addTab(tab)
         }
         
@@ -66,7 +49,7 @@ class MainActivity : AppCompatActivity() {
   
         })
       }
-      candleStickChart = BLCandleStickChartKT(this@MainActivity)
+      candleStickChart = BlinnnkCandleStickChart(this@MainActivity)
       candleStickChart.layoutParams =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Utils.convertDpToPixel(300f).toInt())
       addView(candleStickChart)
@@ -75,7 +58,7 @@ class MainActivity : AppCompatActivity() {
     
 //    setContentView(R.layout.activity_main)
 //    candleStickChart = findViewById(R.id.candle_chart)
-    requestData(intervalSet.get(0))
+    requestData(IntervalEnum.ONE_DAY.interval)
     
   }
   
@@ -91,7 +74,9 @@ class MainActivity : AppCompatActivity() {
           
         } catch (e: IOException) {
           e.printStackTrace()
-          toast(e.toString())
+          runOnUiThread {
+            toast(e.toString())
+          }
         }
         
       }

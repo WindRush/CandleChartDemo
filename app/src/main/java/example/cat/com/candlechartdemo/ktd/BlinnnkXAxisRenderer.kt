@@ -11,7 +11,7 @@ import com.github.mikephil.charting.utils.ViewPortHandler
  * @author: yanglihai
  * @description: 绘制横轴gridline的render
  */
-class BLXAxisRendererKT(
+class BlinnnkXAxisRenderer(
   viewPortHandler: ViewPortHandler,
   xAxis: XAxis,
   trans: Transformer

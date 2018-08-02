@@ -17,20 +17,15 @@ import example.cat.com.candlechartdemo.R
  * @description: 点击candleChartView的item的时候展示的具体详情
  */
 
-class BLMarkerViewKT : MarkerView {
+class BlinnnkMarkerView : MarkerView {
   private var tvContent: TextView
   
-  constructor(context: Context) : super(context,
-    R.layout.chart_marker_vier) {
-    
+  constructor(context: Context) : super(context, R.layout.chart_marker_vier) {
     tvContent = findViewById(R.id.textview_content)
   }
   
   
-  override fun refreshContent(
-    e: Entry?,
-    highlight: Highlight?
-  ) {
+  override fun refreshContent(e: Entry?, highlight: Highlight?) {
     
     val entry = e as CandleEntry?
     
@@ -41,7 +36,7 @@ class BLMarkerViewKT : MarkerView {
   }
   
   override fun getOffset(): MPPointF {
-    return MPPointF((-(width / 2)).toFloat(), (-height).toFloat())
+    return MPPointF((-width / 2).toFloat(), -height.toFloat())
   }
 }
 
