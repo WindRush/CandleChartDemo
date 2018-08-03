@@ -353,5 +353,6 @@ class BlinnnkCandleStickChartRenderer(
       drawHighlightLines(c, pix.x.toFloat(), pix.y.toFloat(), set)
     }
   }
+  
 }
 

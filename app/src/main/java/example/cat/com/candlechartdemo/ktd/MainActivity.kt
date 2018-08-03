@@ -84,6 +84,9 @@ class MainActivity : AppCompatActivity() {
   }
   
   internal fun setData() {
+    
+    candleStickChart.setEmptyData()
+    
     candleEntrySet.clear()
     for (i in 0 until dataSet.size) {
       candleEntrySet.add(CandleEntry(java.lang.Float.valueOf(i.toFloat()),

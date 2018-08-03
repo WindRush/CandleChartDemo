@@ -116,6 +116,10 @@ public class ViewPortHandler {
                 - offsetBottom);
     }
 
+    public void resetContentLeft(float offsetLeft) {
+        mContentRect.left = offsetLeft;
+    }
+
     public float offsetLeft() {
         return mContentRect.left;
     }

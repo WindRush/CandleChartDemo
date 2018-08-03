@@ -3,6 +3,7 @@ package example.cat.com.candlechartdemo.ktd
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import com.github.mikephil.charting.charts.BarLineChartBase
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
@@ -32,9 +33,13 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
   
   private val xAxinSpace = 0.5f
   
+  private val delayTime = 500
+  
   private lateinit var blinnnkXValueFormatter: BlinnnkXValueFormatter
   
   private lateinit var blinnnkMarkerView: BlinnnkMarkerView
+  
+  private var isGetLeftZero = false
   
   constructor(context: Context) : super(context)
   
@@ -64,11 +69,33 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
     
   }
   
+  override fun getLowestVisibleX(): Float {
+    if (isGetLeftZero) {
+      return mXAxis.mAxisMinimum
+    }else{
+      return super.getLowestVisibleX()
+      
+    }
+    postDelayed( {isGetLeftZero = false}, delayTime.toLong())
+    
+  }
+  
+  override fun getHighestVisibleX(): Float {
+    if (isGetLeftZero) {
+      return mXAxis.mAxisMaximum
+    }else{
+      return super.getHighestVisibleX()
+    }
+  }
   
   fun resetData(dataRows: List<CandleEntry>) {
     
+    isGetLeftZero = true
+    
     resetTracking()
     clear()
+    
+    lowestVisibleX
     
     val dataSet = CandleDataSet(dataRows, "Data Set")
     
@@ -95,8 +122,6 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
     setVisibleXRangeMaximum(this@BlinnnkCandleStickChart.xRangeVisibleNum)
     setVisibleXRangeMinimum(this@BlinnnkCandleStickChart.xRangeVisibleNum)
     invalidate()
-    post {
-    }
   }
   
   private fun resetAxisStyle() {
@@ -134,9 +159,9 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
     return mData
   }
   
-  private fun setEmptyData() {
+  fun setEmptyData() {
     val candleEntrySet = mutableListOf<CandleEntry>()
-    for (i in 0 until 20) {
+    for (i in 0 until 19) {
       candleEntrySet.add(CandleEntry(java.lang.Float.valueOf(i.toFloat()),
         0f,0f,0f,0f,java.lang.Long.valueOf(0)))
     
@@ -146,5 +171,6 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
   
   override fun onDraw(canvas: Canvas?) {
     super.onDraw(canvas)
+    
   }
 }

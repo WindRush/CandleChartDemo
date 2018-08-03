@@ -1365,10 +1365,14 @@ public abstract class BarLineChartBase<T extends BarLineScatterCandleBubbleData<
      */
     @Override
     public float getLowestVisibleX() {
+        Log.e(BarLineChartBase.class.getSimpleName(),"before getLowestVisibleX:"+posForGetLowestVisibleX.x);
         getTransformer(AxisDependency.LEFT).getValuesByTouchPoint(mViewPortHandler.contentLeft(),
                 mViewPortHandler.contentBottom(), posForGetLowestVisibleX);
+        Log.e(BarLineChartBase.class.getSimpleName(),"after getLowestVisibleX:"+posForGetLowestVisibleX.x);
         float result = (float) Math.max(mXAxis.mAxisMinimum, posForGetLowestVisibleX.x);
-        return result;
+      Log.e(BarLineChartBase.class.getSimpleName(),"xaxis min:"+posForGetLowestVisibleX.x);
+
+      return result;
     }
 
     /**
