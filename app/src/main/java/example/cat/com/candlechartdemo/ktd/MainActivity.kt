@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity() {
   
           override fun onTabSelected(tab: TabLayout.Tab?) {
             requestData(tab?.tag as String)
-            candleStickChart.setEmptyData()
           }
   
         })
@@ -59,9 +58,6 @@ class MainActivity : AppCompatActivity() {
       addView(candleStickChart)
     }
     
-    
-//    setContentView(R.layout.activity_main)
-//    candleStickChart = findViewById(R.id.candle_chart)
     requestData(IntervalEnum.ONE_DAY.interval)
     
   }
@@ -99,6 +95,6 @@ class MainActivity : AppCompatActivity() {
         java.lang.Long.valueOf(dataSet[i][0])))
       
     }
-    candleStickChart.resetData(candleEntrySet)
+    candleStickChart.notifyData(candleEntrySet)
   }
 }

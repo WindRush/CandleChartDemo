@@ -94,14 +94,21 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
     }
   }
   
-  fun resetData(dataRows: List<CandleEntry>) {
+  fun notifyData(dataRows: List<CandleEntry>) {
+    setEmptyData()
+    postDelayed(object : Runnable{
+      override fun run() {
+        resetData(dataRows)
+      }
+    },500)
+  }
+  
+  private fun resetData(dataRows: List<CandleEntry>) {
     
     isGetLeftZero = true
     
     resetTracking()
     clear()
-    
-    lowestVisibleX
     
     val dataSet = CandleDataSet(dataRows, "Data Set")
     
