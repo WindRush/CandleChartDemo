@@ -1,4 +1,4 @@
-package example.cat.com.candlechartdemo.ktd
+package example.cat.com.candlechartdemo.ktd.candle
 
 import android.graphics.Color
 import android.os.Bundle
@@ -13,7 +13,7 @@ import org.jetbrains.anko.*
 import org.jetbrains.anko.design.tabLayout
 import java.io.IOException
 
-class MainActivity : AppCompatActivity() {
+class CandleChartActivity : AppCompatActivity() {
   private lateinit var candleStickChart: BlinnnkCandleStickChart
   private val normalTabTextColor = Color.rgb(152, 152, 152)
   private val selectedTabTextColor = Color.rgb(67, 200, 135)
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
   
         })
       }
-      candleStickChart = BlinnnkCandleStickChart(this@MainActivity)
+      candleStickChart = BlinnnkCandleStickChart(this@CandleChartActivity)
       candleStickChart.layoutParams =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Utils.convertDpToPixel(300f).toInt())
       addView(candleStickChart)

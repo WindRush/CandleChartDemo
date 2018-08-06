@@ -1,9 +1,9 @@
-package example.cat.com.candlechartdemo.ktd
+package example.cat.com.candlechartdemo.ktd.line
 
 
 import com.github.mikephil.charting.charts.BarLineChartBase
 import com.github.mikephil.charting.components.AxisBase
-import com.github.mikephil.charting.data.CandleDataSet
+import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IAxisValueFormatter
 import java.text.SimpleDateFormat
 import java.util.*
@@ -14,7 +14,7 @@ import java.util.*
  * @description: x轴的坐标展示的时间字符串转换器
  */
 
-class BlinnnkXValueFormatter(private val chart: BarLineChartBase<*>) : IAxisValueFormatter {
+class BlinnnkLineXValueFormatter(private val chart: BarLineChartBase<*>) : IAxisValueFormatter {
   
   private val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
   
@@ -24,7 +24,7 @@ class BlinnnkXValueFormatter(private val chart: BarLineChartBase<*>) : IAxisValu
       || this.chart.data.getDataSetByIndex(0) == null) {
       return ""
     }
-    var values = (this.chart.data.getDataSetByIndex(0) as CandleDataSet).values
+    var values = (this.chart.data.getDataSetByIndex(0) as DataSet<CandleEntry>).values
     if (position >= values.size) return ""
     val entry = values[position]
     if ((entry.data as Long) == 0.toLong()) return ""

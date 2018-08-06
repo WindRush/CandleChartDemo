@@ -1,9 +1,8 @@
-package example.cat.com.candlechartdemo.ktd
+package example.cat.com.candlechartdemo.ktd.candle
 
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.Log
 import com.github.mikephil.charting.charts.BarLineChartBase
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis

@@ -1,4 +1,4 @@
-package example.cat.com.candlechartdemo.ktd
+package example.cat.com.candlechartdemo.ktd.candle
 
 import android.graphics.Canvas
 import com.github.mikephil.charting.components.XAxis

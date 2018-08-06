@@ -1,4 +1,4 @@
-package example.cat.com.candlechartdemo.ktd
+package example.cat.com.candlechartdemo.ktd.candle
 
 /**
  * @date: 2018/8/2.
