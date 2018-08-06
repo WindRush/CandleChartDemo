@@ -69,6 +69,12 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
     
   }
   
+  private val getLeftRunnable = object: Runnable {
+    override fun run() {
+      isGetLeftZero = false
+    }
+  }
+  
   override fun getLowestVisibleX(): Float {
     if (isGetLeftZero) {
       return mXAxis.mAxisMinimum
@@ -76,7 +82,7 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
       return super.getLowestVisibleX()
       
     }
-    postDelayed( {isGetLeftZero = false}, delayTime.toLong())
+    postDelayed(getLeftRunnable, delayTime.toLong())
     
   }
   

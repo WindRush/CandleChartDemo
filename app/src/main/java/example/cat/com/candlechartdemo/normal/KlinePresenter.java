@@ -26,7 +26,7 @@ public class KlinePresenter {
 
   }
 
-  public static String regetData(String s) throws IOException{
+  public static String requestData(String s) throws IOException{
     interval = s;
     return getData();
   }

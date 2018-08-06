@@ -18,12 +18,9 @@ import example.cat.com.candlechartdemo.R
  */
 
 class BlinnnkMarkerView : MarkerView {
-  private var tvContent: TextView
+  private var tvContent: TextView = findViewById(R.id.textview_content)
   
-  constructor(context: Context) : super(context, R.layout.chart_marker_vier) {
-    tvContent = findViewById(R.id.textview_content)
-  }
-  
+  constructor(context: Context) : super(context, R.layout.chart_marker_vier)
   
   override fun refreshContent(e: Entry?, highlight: Highlight?) {
     

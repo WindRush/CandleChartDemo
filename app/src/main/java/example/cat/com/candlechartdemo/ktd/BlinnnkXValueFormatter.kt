@@ -28,8 +28,8 @@ class BlinnnkXValueFormatter(private val chart: BarLineChartBase<*>) : IAxisValu
     if (position >= values.size) return ""
     val entry = values[position]
     if ((entry.data as Long) == 0.toLong()) return ""
-    var result = simpleDateFormat.format(Date(entry.data as Long))
-    return result
+    return simpleDateFormat.format(Date(entry.data as Long))
+    
     
   }
   

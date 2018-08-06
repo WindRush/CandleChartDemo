@@ -18,8 +18,7 @@ import com.github.mikephil.charting.utils.*
 class BlinnnkCandleStickChartRenderer(
   protected var mChart: CandleDataProvider,
   animator: ChartAnimator,
-  viewPortHandler: ViewPortHandler
-) : LineScatterCandleRadarRenderer(animator, viewPortHandler) {
+  viewPortHandler: ViewPortHandler) : LineScatterCandleRadarRenderer(animator, viewPortHandler) {
   
   private val radius = 3f
   

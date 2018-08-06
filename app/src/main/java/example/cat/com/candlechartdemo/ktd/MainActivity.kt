@@ -15,7 +15,10 @@ import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
   private lateinit var candleStickChart: BlinnnkCandleStickChart
-  internal var labelColor: Int = Color.rgb(152, 152, 152)
+  private val normalTabTextColor = Color.rgb(152, 152, 152)
+  private val selectedTabTextColor = Color.rgb(67, 200, 135)
+  private val tabIndicatorColor = selectedTabTextColor
+  private val tabHeight = Utils.convertDpToPixel(2f).toInt()
   private var dataSet = mutableListOf<Array<String>>()
   private val candleEntrySet = mutableListOf<CandleEntry>()
   
@@ -26,9 +29,9 @@ class MainActivity : AppCompatActivity() {
       backgroundColor = Color.BLACK
       tabLayout {
         tabMode = TabLayout.MODE_SCROLLABLE
-        setTabTextColors(labelColor,Color.rgb(67, 200, 135))
-        setSelectedTabIndicatorColor(Color.rgb(67, 200, 135))
-        setSelectedTabIndicatorHeight(Utils.convertDpToPixel(2f).toInt())
+        setTabTextColors(normalTabTextColor,selectedTabTextColor)
+        setSelectedTabIndicatorColor(tabIndicatorColor)
+        setSelectedTabIndicatorHeight(tabHeight)
         for (interval in IntervalEnum.values()) {
           val tab = newTab()
           tab.setText(interval.interval)
@@ -45,6 +48,7 @@ class MainActivity : AppCompatActivity() {
   
           override fun onTabSelected(tab: TabLayout.Tab?) {
             requestData(tab?.tag as String)
+            candleStickChart.setEmptyData()
           }
   
         })
@@ -67,7 +71,7 @@ class MainActivity : AppCompatActivity() {
       override fun run() {
         super.run()
         try {
-          val result = KlinePresenter.regetData(interval)
+          val result = KlinePresenter.requestData(interval)
           dataSet.clear()
           dataSet.addAll(JSON.parseArray(result, Array<String>::class.java))
           runOnUiThread { setData() }
@@ -84,8 +88,6 @@ class MainActivity : AppCompatActivity() {
   }
   
   internal fun setData() {
-    
-    candleStickChart.setEmptyData()
     
     candleEntrySet.clear()
     for (i in 0 until dataSet.size) {
