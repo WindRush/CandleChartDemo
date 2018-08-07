@@ -9,7 +9,7 @@ import com.github.mikephil.charting.utils.ViewPortHandler
  * @author: yanglihai
  * @description: 线性表的左侧Y轴数据展示
  */
-class LineYValueFormatter : IValueFormatter {
+class BlinnnkLineYValueFormatter : IValueFormatter {
   override fun getFormattedValue(value: Float,
     entry: Entry,
     dataSetIndex: Int,

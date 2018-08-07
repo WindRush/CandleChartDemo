@@ -27,11 +27,14 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   private lateinit var blinnnkMarkerView: BlinnnkLineMarkerView
   private lateinit var blinnnkXValueFormatter: BlinnnkXValueFormatter
   private val xRangeVisibleNum = 5f
-  private val lineYValueFormatter = LineYValueFormatter()
+  private val lineYValueFormatter = BlinnnkLineYValueFormatter()
   
   private var pointColor: Int = Color.BLACK
   
   private val gridlineColor = Color.rgb(236,236,236)
+  
+  private val labelColor = Color.rgb(152, 152, 152)
+  
   
   private var isDrawPoints: Boolean = false
   private var isPerformBezier = false
@@ -66,13 +69,11 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
     
     post {
       initAxisStyle()
+      setEmptyData()
     }
   }
   
   fun initAxisStyle() {
-//    setOnChartGestureListener(this)
-//    setOnChartValueSelectedListener(this)
-  
     isScaleXEnabled = false
     isScaleYEnabled = false
     mPinchZoomEnabled = true
@@ -88,11 +89,11 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
       setDrawAxisLine(false)
       setDrawLabels(true)
       gridColor = gridlineColor
+      textColor = labelColor
     }
     mAxisLeft.apply {
-      mAxisMaximum = 50f
-      axisMinimum = -50f
       gridColor = gridlineColor
+      textColor = labelColor
     }
   
     axisRight.apply {
@@ -105,6 +106,15 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   }
   
   fun notifyData(dataRows: List<Entry>) {
+    setEmptyData()
+    postDelayed(object : Runnable{
+      override fun run() {
+        resetData(dataRows)
+      }
+    },500)
+  }
+  
+  private fun resetData(dataRows: List<Entry>) {
     
     val dataSet: LineDataSet
     

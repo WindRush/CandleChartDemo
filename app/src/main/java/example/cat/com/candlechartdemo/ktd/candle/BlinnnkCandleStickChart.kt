@@ -20,7 +20,7 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
   
   
   private val labelColor = Color.rgb(152, 152, 152)
-  private val shadowColor = Color.DKGRAY
+  private val shadowColor = Color.DKGRAY//蜡烛柄颜色
   private val decreasingColor = Color.rgb(219, 74, 76)
   private val increasingColor = Color.rgb(67, 200, 135)
   private val labelCount = 9
@@ -28,7 +28,7 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
   
   private val neutralColor = Color.BLUE
   private val barSpace = 0.2f
-  private val shadowWidth = 2f
+  private val shadowWidth = 2f//蜡烛柄宽度
   
   private val xRangeVisibleNum = 20f
   

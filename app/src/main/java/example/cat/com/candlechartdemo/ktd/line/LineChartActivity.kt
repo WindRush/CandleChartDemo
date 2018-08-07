@@ -75,8 +75,6 @@ class LineChartActivity : AppCompatActivity() {
     }
   
     requestData(IntervalEnum.ONE_DAY.interval)
-    blinnnkLineChart.setEmptyData()
-    blinnnkLineChart2.setEmptyData()
   
   }
   
