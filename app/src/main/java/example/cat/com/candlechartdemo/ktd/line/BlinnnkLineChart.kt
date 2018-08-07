@@ -64,7 +64,7 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
       mLeftAxisTransformer)
     
     blinnnkMarkerView = BlinnnkLineMarkerView(context)
-    blinnnkMarkerView.chartView = this
+    blinnnkMarkerView.setChartView(this)
     blinnnkXValueFormatter = BlinnnkXValueFormatter(this@BlinnnkLineChart)
     
     post {
@@ -193,6 +193,6 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
       candleEntrySet.add(Entry(i.toFloat(),(Math.random()*10).toFloat(),java.lang.Long.valueOf(0)))
       
     }
-    notifyData(candleEntrySet)
+    resetData(candleEntrySet)
   }
 }

@@ -57,7 +57,7 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
     super.init()
     
     blinnnkMarkerView = BlinnnkMarkerView(context)
-    blinnnkMarkerView.chartView = this
+    blinnnkMarkerView.setChartView(this)
   
     blinnnkXValueFormatter = BlinnnkXValueFormatter(this@BlinnnkCandleStickChart)
     mXAxisRenderer = BlinnnkXAxisRenderer(mViewPortHandler,
