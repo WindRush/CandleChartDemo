@@ -11,7 +11,6 @@ import com.github.mikephil.charting.utils.Utils
 import example.cat.com.candlechartdemo.R
 import example.cat.com.candlechartdemo.ktd.candle.IntervalEnum
 import example.cat.com.candlechartdemo.normal.KlinePresenter
-import kotlinx.android.synthetic.main.activity_main.view.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.design.tabLayout
 import java.io.IOException
@@ -29,6 +28,8 @@ class LineChartActivity : AppCompatActivity() {
   private val tabHeight = Utils.convertDpToPixel(2f).toInt()
   private var dataSet = mutableListOf<Array<String>>()
   private val candleEntrySet = mutableListOf<CandleEntry>()
+  private var chartColor: Int = Color.RED
+  private var chartShadowResource: Int = R.drawable.fade_red
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     verticalLayout {
@@ -59,7 +60,7 @@ class LineChartActivity : AppCompatActivity() {
         })
       }
       
-      blinnnkLineChart = BlinnnkLineChart(this@LineChartActivity)
+      blinnnkLineChart = BlinnnkLineChart(this@LineChartActivity, true, chartColor, chartShadowResource)
       blinnnkLineChart.layoutParams =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Utils.convertDpToPixel(300f).toInt())
       addView(blinnnkLineChart)
@@ -99,7 +100,6 @@ class LineChartActivity : AppCompatActivity() {
         java.lang.Float.valueOf(dataSet[i][3]),
         java.lang.Float.valueOf(dataSet[i][1]),
         java.lang.Float.valueOf(dataSet[i][4]),
-        resources.getDrawable(R.drawable.ic_launcher_foreground),
         java.lang.Long.valueOf(dataSet[i][0])))
       
     }

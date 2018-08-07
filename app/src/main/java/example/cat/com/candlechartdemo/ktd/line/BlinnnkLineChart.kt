@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.graphics.DashPathEffect
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
+import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.BarLineChartBase
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
@@ -14,9 +15,9 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.renderer.LineChartRenderer
 import com.github.mikephil.charting.utils.Utils
 import example.cat.com.candlechartdemo.R
-import example.cat.com.candlechartdemo.ktd.candle.*
+import example.cat.com.candlechartdemo.ktd.candle.BlinnnkXAxisRenderer
+import example.cat.com.candlechartdemo.ktd.candle.BlinnnkXValueFormatter
 import java.util.*
-import kotlin.math.absoluteValue
 
 /**
  * @date: 2018/8/6.
@@ -28,13 +29,25 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   
   private lateinit var blinnnkMarkerView: BlinnnkLineMarkerView
   private lateinit var blinnnkXValueFormatter: BlinnnkXValueFormatter
-  private val xRangeVisibleNum = 10f
+  private val xRangeVisibleNum = 5f
   private val lineYValueFormatter = LineYValueFormatter()
   
-  private val lineColor = Color.RED
-  private val pointColor = Color.BLACK
+  private var pointColor: Int = Color.BLACK
   
-  constructor(context: Context) : super(context)
+  private val gridlineColor = Color.rgb(236,236,236)
+  
+  private var isDrawPoints: Boolean = false
+  private var chartColor: Int = Color.RED
+  private val chartWidth = 3f
+  private val pointRadius = arrayListOf<Float>(5f,2f)
+  private var chartShadowResource: Int = R.drawable.fade_red
+  
+  constructor(context: Context, isDrawPoints: Boolean, chartColor: Int, chartShadowResource: Int) : super(context) {
+    this@BlinnnkLineChart.isDrawPoints = isDrawPoints
+    this@BlinnnkLineChart.chartColor = chartColor
+    this@BlinnnkLineChart.chartShadowResource = chartShadowResource
+    this@BlinnnkLineChart.pointColor = chartColor
+  }
   
   constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
   
@@ -53,8 +66,6 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
     post {
       initAxisStyle()
     }
-    
-    
   }
   
   fun initAxisStyle() {
@@ -65,37 +76,31 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
     isScaleYEnabled = false
     mPinchZoomEnabled = true
     isDragEnabled = true
-    legend.isEnabled = false
-    description.isEnabled = false
-    setDrawGridBackground(false)
+    legend.isEnabled = false//标签是否显示
+    description.isEnabled = false//描述信息展示
   
     marker = this@BlinnnkLineChart.blinnnkMarkerView
   
     xAxis.apply {
-//      enableGridDashedLine(10f, 10f, 0f)//虚线
       valueFormatter = blinnnkXValueFormatter
       position = XAxis.XAxisPosition.BOTTOM
       setDrawAxisLine(false)
       setDrawLabels(true)
+      gridColor = gridlineColor
     }
     mAxisLeft.apply {
-      enableGridDashedLine(10f, 10f, 0f)
-      setDrawZeroLine(false)
-      setDrawLimitLinesBehindData(true)
       mAxisMaximum = 50f
       axisMinimum = -50f
-    
+      gridColor = gridlineColor
     }
   
     axisRight.apply {
-//      setEnabled(true)
       isEnabled = true
       setDrawLabels(false)
+      setDrawGridLines(false)
     }
     
     animateY(1000)
-    // modify the legend ...
-    legend.setForm(Legend.LegendForm.LINE)
   }
   
   fun notifyData(dataRows: List<Entry>) {
@@ -117,25 +122,29 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
         mode = LineDataSet.Mode.CUBIC_BEZIER
         cubicIntensity = 0.2f
         
-        setDrawIcons(false)
-        setDrawValues(false)
-        color = lineColor
-        setCircleColor(pointColor)
-        lineWidth = 3f
-        circleRadius = 5f
-        circleHoleRadius = 3f
-        setDrawCircleHole(true)
-        valueTextSize = 9f
+        setDrawIcons(false)//显示图标
+        setDrawValues(false)//展示每个点的值
+        
+        color = chartColor
+        lineWidth = chartWidth
+        if (isDrawPoints) {
+          //峰值点
+          setDrawCircles(true)
+          setCircleColor(pointColor)
+          circleRadius = pointRadius[0]
+          circleHoleRadius = pointRadius[1]
+          setDrawCircleHole(true)
+        }else {
+          setDrawCircles(false)
+        }
+        
         setDrawFilled(true)
-        formLineWidth = 1f
-        formLineDashEffect = DashPathEffect(floatArrayOf(10f, 5f), 0f)
-        formSize = 15f
   
         if (Utils.getSDKInt() >= 18) {
           // fill drawable only supported on api level 18 and above
-          fillDrawable= ContextCompat.getDrawable(context, R.drawable.fade_red)
+          fillDrawable= ContextCompat.getDrawable(context, chartShadowResource)
         } else {
-          fillColor = Color.RED
+          fillColor = Color.TRANSPARENT
         }
       }
       
@@ -168,11 +177,8 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   fun setEmptyData() {
     val candleEntrySet = mutableListOf<Entry>()
     for (i in 0 until 19) {
-      
       candleEntrySet.add(Entry(i.toFloat(),(Math.random()*10).toFloat(),java.lang.Long.valueOf(1533549860)))
       
-//      candleEntrySet.add(CandleEntry(java.lang.Float.valueOf(i.toFloat()),
-//        0f,0f,0f,i.toFloat(),java.lang.Long.valueOf(0)))
     }
     notifyData(candleEntrySet)
   }
