@@ -18,10 +18,11 @@ import java.io.IOException
 /**
  * @date: 2018/8/6.
  * @author: yanglihai
- * @description:
+ * @description: 线性表的activity
  */
 class LineChartActivity : AppCompatActivity() {
   private lateinit var blinnnkLineChart: BlinnnkLineChart
+  private lateinit var blinnnkLineChart2: BlinnnkLineChart
   private val normalTabTextColor = Color.rgb(152, 152, 152)
   private val selectedTabTextColor = Color.rgb(67, 200, 135)
   private val tabIndicatorColor = selectedTabTextColor
@@ -29,7 +30,9 @@ class LineChartActivity : AppCompatActivity() {
   private var dataSet = mutableListOf<Array<String>>()
   private val candleEntrySet = mutableListOf<CandleEntry>()
   private var chartColor: Int = Color.RED
+  private var chartColor2: Int = Color.rgb(124,178,66)
   private var chartShadowResource: Int = R.drawable.fade_red
+  private var chartShadowResource2: Int = R.drawable.fade_green
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     verticalLayout {
@@ -60,14 +63,20 @@ class LineChartActivity : AppCompatActivity() {
         })
       }
       
-      blinnnkLineChart = BlinnnkLineChart(this@LineChartActivity, true, chartColor, chartShadowResource)
+      blinnnkLineChart = BlinnnkLineChart(this@LineChartActivity, false, true, chartColor, chartShadowResource)
       blinnnkLineChart.layoutParams =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Utils.convertDpToPixel(300f).toInt())
       addView(blinnnkLineChart)
+  
+      blinnnkLineChart2 = BlinnnkLineChart(this@LineChartActivity, true, false, chartColor2, chartShadowResource2)
+      blinnnkLineChart2.layoutParams =
+        LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Utils.convertDpToPixel(300f).toInt())
+      addView(blinnnkLineChart2)
     }
   
     requestData(IntervalEnum.ONE_DAY.interval)
     blinnnkLineChart.setEmptyData()
+    blinnnkLineChart2.setEmptyData()
   
   }
   
@@ -104,6 +113,7 @@ class LineChartActivity : AppCompatActivity() {
       
     }
     blinnnkLineChart.notifyData(candleEntrySet)
+    blinnnkLineChart2.notifyData(candleEntrySet)
   }
   
   

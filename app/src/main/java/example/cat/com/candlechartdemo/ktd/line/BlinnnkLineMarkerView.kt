@@ -12,7 +12,7 @@ import example.cat.com.candlechartdemo.R
 /**
  * @date: 2018/8/6.
  * @author: yanglihai
- * @description:
+ * @description: 线性表详情这是marker
  */
 class BlinnnkLineMarkerView : MarkerView {
   private var tvContent: TextView = findViewById(R.id.textview_content)

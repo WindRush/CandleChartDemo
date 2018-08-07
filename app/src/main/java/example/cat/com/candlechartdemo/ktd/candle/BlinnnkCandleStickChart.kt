@@ -8,6 +8,8 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.interfaces.dataprovider.CandleDataProvider
+import example.cat.com.candlechartdemo.ktd.BlinnnkXAxisRenderer
+import example.cat.com.candlechartdemo.ktd.BlinnnkXValueFormatter
 
 /**
  * @date: 2018/8/1.
@@ -58,7 +60,9 @@ class BlinnnkCandleStickChart : BarLineChartBase<CandleData>, CandleDataProvider
     blinnnkMarkerView.chartView = this
   
     blinnnkXValueFormatter = BlinnnkXValueFormatter(this@BlinnnkCandleStickChart)
-    mXAxisRenderer = BlinnnkXAxisRenderer(mViewPortHandler, mXAxis, mLeftAxisTransformer)
+    mXAxisRenderer = BlinnnkXAxisRenderer(mViewPortHandler,
+      mXAxis,
+      mLeftAxisTransformer)
     mRenderer = BlinnnkCandleStickChartRenderer(this, mAnimator, mViewPortHandler)
     
     post {

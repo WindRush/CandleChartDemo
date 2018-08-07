@@ -2,12 +2,9 @@ package example.cat.com.candlechartdemo.ktd.line
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.DashPathEffect
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
-import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.BarLineChartBase
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider
@@ -15,14 +12,14 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.renderer.LineChartRenderer
 import com.github.mikephil.charting.utils.Utils
 import example.cat.com.candlechartdemo.R
-import example.cat.com.candlechartdemo.ktd.candle.BlinnnkXAxisRenderer
-import example.cat.com.candlechartdemo.ktd.candle.BlinnnkXValueFormatter
+import example.cat.com.candlechartdemo.ktd.BlinnnkXAxisRenderer
+import example.cat.com.candlechartdemo.ktd.BlinnnkXValueFormatter
 import java.util.*
 
 /**
  * @date: 2018/8/6.
  * @author: yanglihai
- * @description:
+ * @description: 线性表
  */
 class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   
@@ -37,13 +34,15 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   private val gridlineColor = Color.rgb(236,236,236)
   
   private var isDrawPoints: Boolean = false
+  private var isPerformBezier = false
   private var chartColor: Int = Color.RED
   private val chartWidth = 3f
   private val pointRadius = arrayListOf<Float>(5f,2f)
   private var chartShadowResource: Int = R.drawable.fade_red
   
-  constructor(context: Context, isDrawPoints: Boolean, chartColor: Int, chartShadowResource: Int) : super(context) {
+  constructor(context: Context, isDrawPoints: Boolean,isPerformBezier: Boolean, chartColor: Int, chartShadowResource: Int) : super(context) {
     this@BlinnnkLineChart.isDrawPoints = isDrawPoints
+    this@BlinnnkLineChart.isPerformBezier = isPerformBezier
     this@BlinnnkLineChart.chartColor = chartColor
     this@BlinnnkLineChart.chartShadowResource = chartShadowResource
     this@BlinnnkLineChart.pointColor = chartColor
@@ -57,7 +56,9 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   override fun init() {
     super.init()
     mRenderer = LineChartRenderer(this, mAnimator, mViewPortHandler)
-    mXAxisRenderer = BlinnnkXAxisRenderer(mViewPortHandler, mXAxis, mLeftAxisTransformer)
+    mXAxisRenderer = BlinnnkXAxisRenderer(mViewPortHandler,
+      mXAxis,
+      mLeftAxisTransformer)
     
     blinnnkMarkerView = BlinnnkLineMarkerView(context)
     blinnnkMarkerView.chartView = this
@@ -119,8 +120,10 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
         valueFormatter = lineYValueFormatter
 
         //平划的曲线
-        mode = LineDataSet.Mode.CUBIC_BEZIER
-        cubicIntensity = 0.2f
+        if (isPerformBezier){
+          mode = LineDataSet.Mode.CUBIC_BEZIER
+          cubicIntensity = 0.2f
+        }
         
         setDrawIcons(false)//显示图标
         setDrawValues(false)//展示每个点的值
@@ -177,7 +180,7 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   fun setEmptyData() {
     val candleEntrySet = mutableListOf<Entry>()
     for (i in 0 until 19) {
-      candleEntrySet.add(Entry(i.toFloat(),(Math.random()*10).toFloat(),java.lang.Long.valueOf(1533549860)))
+      candleEntrySet.add(Entry(i.toFloat(),(Math.random()*10).toFloat(),java.lang.Long.valueOf(0)))
       
     }
     notifyData(candleEntrySet)
