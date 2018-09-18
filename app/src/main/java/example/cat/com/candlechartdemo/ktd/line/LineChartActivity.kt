@@ -38,6 +38,7 @@ class LineChartActivity : AppCompatActivity() {
     verticalLayout {
       backgroundColor = Color.WHITE
       tabLayout {
+        backgroundColor = Color.RED
         tabMode = TabLayout.MODE_SCROLLABLE
         setTabTextColors(normalTabTextColor,selectedTabTextColor)
         setSelectedTabIndicatorColor(tabIndicatorColor)
@@ -72,6 +73,7 @@ class LineChartActivity : AppCompatActivity() {
       blinnnkLineChart2.layoutParams =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Utils.convertDpToPixel(300f).toInt())
       addView(blinnnkLineChart2)
+      blinnnkLineChart2.setBackgroundColor(Color.BLACK)
     }
   
     requestData(IntervalEnum.ONE_DAY.interval)

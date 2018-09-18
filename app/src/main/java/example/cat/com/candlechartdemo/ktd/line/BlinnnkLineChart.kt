@@ -1,6 +1,7 @@
 package example.cat.com.candlechartdemo.ktd.line
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
 import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
@@ -59,18 +60,16 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   override fun init() {
     super.init()
     mRenderer = LineChartRenderer(this, mAnimator, mViewPortHandler)
-    mXAxisRenderer = BlinnnkXAxisRenderer(mViewPortHandler,
-      mXAxis,
-      mLeftAxisTransformer)
+    mXAxisRenderer = BlinnnkXAxisRenderer(mViewPortHandler, mXAxis, mLeftAxisTransformer)
     
     blinnnkMarkerView = BlinnnkLineMarkerView(context)
     blinnnkMarkerView.setChartView(this)
     blinnnkXValueFormatter = BlinnnkXValueFormatter(this@BlinnnkLineChart)
     
-    post {
+//    post {
       initAxisStyle()
-      setEmptyData()
-    }
+//      setEmptyData()
+//    }
   }
   
   fun initAxisStyle() {
@@ -89,7 +88,7 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
       setDrawAxisLine(false)
       setDrawLabels(true)
       gridColor = gridlineColor
-      textColor = labelColor
+      textColor = Color.rgb(152, 152, 152)
     }
     mAxisLeft.apply {
       gridColor = gridlineColor
@@ -114,7 +113,7 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
     },500)
   }
   
-  private fun resetData(dataRows: List<Entry>) {
+  fun resetData(dataRows: List<Entry>) {
     
     val dataSet: LineDataSet
     
@@ -123,6 +122,7 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
       dataSet.values = dataRows
       mData.notifyDataChanged()
       notifyDataSetChanged()
+      invalidate()
     } else {
       // create a dataset and give it a type
       dataSet = LineDataSet(dataRows, "DataSet 1")
@@ -190,9 +190,13 @@ class BlinnnkLineChart : BarLineChartBase<LineData> ,LineDataProvider {
   fun setEmptyData() {
     val candleEntrySet = mutableListOf<Entry>()
     for (i in 0 until 19) {
-      candleEntrySet.add(Entry(i.toFloat(),(Math.random()*10).toFloat(),java.lang.Long.valueOf(0)))
+      candleEntrySet.add(Entry(i.toFloat(),(Math.random()*10).toFloat(),java.lang.Long.valueOf(1533638365)))
       
     }
     resetData(candleEntrySet)
+  }
+  
+  override fun onDraw(canvas: Canvas?) {
+    super.onDraw(canvas)
   }
 }

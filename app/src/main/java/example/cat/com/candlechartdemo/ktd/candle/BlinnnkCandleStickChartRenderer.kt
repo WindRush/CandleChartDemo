@@ -1,7 +1,6 @@
 package example.cat.com.candlechartdemo.ktd.candle
 
-import android.graphics.Canvas
-import android.graphics.Paint
+import android.graphics.*
 import com.github.mikephil.charting.animation.ChartAnimator
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.dataprovider.CandleDataProvider
@@ -71,7 +70,7 @@ class BlinnnkCandleStickChartRenderer(
       val high = e.high
       val low = e.low
       
-      if (showCandleBar) {
+      if (showCandleBar){
         // calculate the shadow
         
         mShadowBuffers[0] = xPos
@@ -147,9 +146,9 @@ class BlinnnkCandleStickChartRenderer(
           mRenderPaint.strokeCap = Paint.Cap.SQUARE
           
           c.drawRoundRect(mBodyBuffers[0],
-            mBodyBuffers[1],
-            mBodyBuffers[2],
             mBodyBuffers[3],
+            mBodyBuffers[2],
+            mBodyBuffers[1],
             radius,
             radius,
             mRenderPaint)
@@ -237,7 +236,6 @@ class BlinnnkCandleStickChartRenderer(
   }
   
   override fun drawValues(c: Canvas) {
-    
     // if values are drawn
     if (isDrawingValuesAllowed(mChart)) {
       

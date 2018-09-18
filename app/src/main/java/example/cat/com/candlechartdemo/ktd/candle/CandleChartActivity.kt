@@ -20,13 +20,12 @@ class CandleChartActivity : AppCompatActivity() {
   private val tabIndicatorColor = selectedTabTextColor
   private val tabHeight = Utils.convertDpToPixel(2f).toInt()
   private var dataSet = mutableListOf<Array<String>>()
-  private val candleEntrySet = mutableListOf<CandleEntry>()
+  private val candleEntrySet = arrayListOf<CandleEntry>()
   
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     
     verticalLayout {
-      backgroundColor = Color.BLACK
       tabLayout {
         tabMode = TabLayout.MODE_SCROLLABLE
         setTabTextColors(normalTabTextColor,selectedTabTextColor)
@@ -34,8 +33,8 @@ class CandleChartActivity : AppCompatActivity() {
         setSelectedTabIndicatorHeight(tabHeight)
         for (interval in IntervalEnum.values()) {
           val tab = newTab()
-          tab.setText(interval.interval)
-          tab.setTag(interval.interval)
+          tab.text = interval.interval
+          tab.tag = interval.interval
           addTab(tab)
         }
         
@@ -47,12 +46,16 @@ class CandleChartActivity : AppCompatActivity() {
           }
   
           override fun onTabSelected(tab: TabLayout.Tab?) {
-            requestData(tab?.tag as String)
+//            candleStickChart.setEmptyData()
+            setBtcData()
           }
   
         })
       }
       candleStickChart = BlinnnkCandleStickChart(this@CandleChartActivity)
+      candleStickChart.apply {
+        backgroundColor = Color.BLACK
+      }
       candleStickChart.layoutParams =
         LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, Utils.convertDpToPixel(300f).toInt())
       addView(candleStickChart)
@@ -95,6 +98,22 @@ class CandleChartActivity : AppCompatActivity() {
         java.lang.Long.valueOf(dataSet[i][0])))
       
     }
-    candleStickChart.notifyData(candleEntrySet)
+    candleStickChart.resetData(candleEntrySet)
+  }
+  
+  fun setBtcData() {
+    candleEntrySet.clear()
+    BtcCandlePresenter.parseData {
+      it.mapIndexedNotNull { index, candleChartModel ->
+        candleEntrySet.add(CandleEntry(index.toFloat(),
+          java.lang.Float.valueOf(candleChartModel.high),
+          java.lang.Float.valueOf(candleChartModel.low),
+          java.lang.Float.valueOf(candleChartModel.open),
+          java.lang.Float.valueOf(candleChartModel.close),
+          java.lang.Long.valueOf(candleChartModel.time)))
+      }.let {
+        candleStickChart.resetData(candleEntrySet)
+      }
+    }
   }
 }
