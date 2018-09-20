@@ -647,11 +647,11 @@ open class PieChart : PieRadarChartBase<PieData> {
     isUsePercentValuesEnabled = enabled
   }
   
-  override fun onDetachedFromWindow() {
-    // releases the bitmap in the renderer to avoid oom error
-    if (mRenderer != null && mRenderer is BlinnnkPieChartRenderer) {
-      (mRenderer as? BlinnnkPieChartRenderer)?.releaseBitmap()
-    }
-    super.onDetachedFromWindow()
-  }
+//  override fun onDetachedFromWindow() {
+//    // releases the bitmap in the renderer to avoid oom error
+//    if (mRenderer != null && mRenderer is BlinnnkPieChartRenderer) {
+//      (mRenderer as? BlinnnkPieChartRenderer)?.releaseBitmap()
+//    }
+//    super.onDetachedFromWindow()
+//  }
 }

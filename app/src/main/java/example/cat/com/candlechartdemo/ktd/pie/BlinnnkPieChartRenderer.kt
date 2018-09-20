@@ -1,24 +1,17 @@
 package example.cat.com.candlechartdemo.ktd.pie
 
 
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Paint.Align
-import android.graphics.Paint.Style
 import android.graphics.Path
 import android.graphics.RectF
-import android.graphics.drawable.Drawable
 import android.os.Build
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 
 import com.github.mikephil.charting.animation.ChartAnimator
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data .Entry
-import com.github.mikephil.charting.data .PieData
 import com.github.mikephil.charting.data .PieDataSet
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.interfaces.datasets.IPieDataSet
@@ -28,15 +21,13 @@ import com.github.mikephil.charting.utils.MPPointF
 import com.github.mikephil.charting.utils.Utils
 import com.github.mikephil.charting.utils.ViewPortHandler
 
-import java.lang.ref.WeakReference
-
 /**
  * @date: 2018/9/18.
  * @author: yanglihai
  * @description:
  */
 class BlinnnkPieChartRenderer(
-  private var mChart: PieChart,
+  private var pieChart: PieChart,
   animator: ChartAnimator,
   viewPortHandler: ViewPortHandler
 ) : DataRenderer(
@@ -49,10 +40,8 @@ class BlinnnkPieChartRenderer(
    * circle
    */
   var paintHole: Paint
-    protected set
   var paintTransparentCircle: Paint
-    protected set
-  protected var mValueLinePaint: Paint
+  protected var valueLinePaint: Paint
   
   /**
    * paint object for the text that can be displayed in the center of the
@@ -65,30 +54,23 @@ class BlinnnkPieChartRenderer(
    */
   val paintEntryLabels: Paint
   
-  private var mCenterTextLayout: StaticLayout? = null
-  private var mCenterTextLastValue: CharSequence? = null
-  private val mCenterTextLastBounds = RectF()
-  private val mRectBuffer = arrayOf(
+  private var centerTextLayout: StaticLayout? = null
+  private var centerTextLastValue: CharSequence? = null
+  private val centerTextLastBounds = RectF()
+  private val rectBuffer = arrayOf(
     RectF(),
     RectF(),
     RectF()
   )
   
-  /**
-   * Bitmap for drawing the center hole
-   */
-  protected var mDrawBitmap: WeakReference<Bitmap>? = null
+  private val pathBuffer = Path()
+  private val innerRectBuffer = RectF()
   
-  protected var mBitmapCanvas: Canvas? = null
+  private val holeCirclePath = Path()
   
-  private val mPathBuffer = Path()
-  private val mInnerRectBuffer = RectF()
+  protected var drawCenterTextPathBuffer = Path()
   
-  private val mHoleCirclePath = Path()
-  
-  protected var mDrawCenterTextPathBuffer = Path()
-  
-  protected var mDrawHighlightedRectF = RectF()
+  protected var drawHighlightedRectF = RectF()
   
   init {
     
@@ -114,44 +96,22 @@ class BlinnnkPieChartRenderer(
     paintEntryLabels.textAlign = Paint.Align.CENTER
     paintEntryLabels.textSize = Utils.convertDpToPixel(13f)
     
-    mValueLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    mValueLinePaint.style = Paint.Style.STROKE
+    valueLinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    valueLinePaint.style = Paint.Style.STROKE
   }
   
   override fun initBuffers() {
     // TODO Auto-generated method stub
   }
   
-  override fun drawData(c: Canvas) {
+  override fun drawData(canvas: Canvas) {
     
-    val width = mViewPortHandler.chartWidth.toInt()
-    val height = mViewPortHandler.chartHeight.toInt()
-    
-    if (mDrawBitmap == null || mDrawBitmap!!.get()!!.width != width || mDrawBitmap!!.get()!!.height != height) {
-      
-      if (width > 0 && height > 0) {
-        
-        mDrawBitmap = WeakReference(
-          Bitmap.createBitmap(
-            width,
-            height,
-            Bitmap.Config.ARGB_4444
-          )
-        )
-        mBitmapCanvas = Canvas(mDrawBitmap!!.get()!!)
-      } else return
-    }
-    
-    mDrawBitmap!!.get()!!.eraseColor(Color.TRANSPARENT)
-    
-    val pieData = mChart.data
+    val pieData = pieChart.data
     
     for (set in pieData.dataSets) {
       
-      if (set.isVisible && set.entryCount > 0) drawDataSet(
-        c,
-        set
-      )
+      if (set.isVisible && set.entryCount > 0)
+        drawDataSet(canvas, set)
     }
   }
   
@@ -176,13 +136,8 @@ class BlinnnkPieChartRenderer(
     
     // This is the base of the contained triangle
     val basePointsDistance = Math.sqrt(
-      Math.pow(
-        (arcEndPointX - arcStartPointX).toDouble(),
-        2.0
-      ) + Math.pow(
-        (arcEndPointY - arcStartPointY).toDouble(),
-        2.0
-      )
+      Math.pow((arcEndPointX - arcStartPointX).toDouble(), 2.0)
+        + Math.pow((arcEndPointY - arcStartPointY).toDouble(), 2.0)
     )
     
     // After reducing space from both sides of the "slice",
@@ -195,13 +150,8 @@ class BlinnnkPieChartRenderer(
     
     // And now subtract the height of the arc that's between the triangle and the outer circle
     spacedRadius -= Math.sqrt(
-      Math.pow(
-        (arcMidPointX - (arcEndPointX + arcStartPointX) / 2f).toDouble(),
-        2.0
-      ) + Math.pow(
-        (arcMidPointY - (arcEndPointY + arcStartPointY) / 2f).toDouble(),
-        2.0
-      )
+      Math.pow((arcMidPointX - (arcEndPointX + arcStartPointX) / 2f).toDouble(), 2.0)
+        + Math.pow((arcMidPointY - (arcEndPointY + arcStartPointY) / 2f).toDouble(), 2.0)
     ).toFloat()
     
     return spacedRadius
@@ -213,62 +163,62 @@ class BlinnnkPieChartRenderer(
    * @param dataSet
    * @return
    */
-  protected fun getSliceSpace(dataSet: IPieDataSet): Float {
+  private fun getSliceSpace(dataSet: IPieDataSet): Float {
     
     if (!dataSet.isAutomaticallyDisableSliceSpacingEnabled) return dataSet.sliceSpace
     
     val spaceSizeRatio = dataSet.sliceSpace / mViewPortHandler.smallestContentExtension
-    val minValueRatio = dataSet.yMin / mChart.data.yValueSum * 2
+    val minValueRatio = dataSet.yMin / pieChart.data.yValueSum * 2
     
     return if (spaceSizeRatio > minValueRatio) 0f else dataSet.sliceSpace
   }
   
-  protected fun drawDataSet(
-    c: Canvas,
+  private fun drawDataSet(
+    canvas: Canvas,
     dataSet: IPieDataSet
   ) {
     
     var angle = 0f
-    val rotationAngle = mChart.rotationAngle
+    val rotationAngle = pieChart.rotationAngle
     
     val phaseX = mAnimator.phaseX
     val phaseY = mAnimator.phaseY
     
-    val circleBox = mChart.circleBox
+    val circleBox = pieChart.circleBox
     
     val entryCount = dataSet.entryCount
-    val drawAngles = mChart.drawAngles
-    val center = mChart.centerCircleBox
-    val radius = mChart.radius
-    val drawInnerArc = mChart.isDrawHoleEnabled && !mChart.isDrawSlicesUnderHoleEnabled
-    val userInnerRadius = if (drawInnerArc) radius * (mChart.holeRadius / 100f)
+    val drawAngles = pieChart.drawAngles
+    val center = pieChart.centerCircleBox
+    val radius = pieChart.radius
+    val drawInnerArc = pieChart.isDrawHoleEnabled && !pieChart.isDrawSlicesUnderHoleEnabled
+    val userInnerRadius = if (drawInnerArc) radius * (pieChart.holeRadius / 100f)
     else 0f
     
     var visibleAngleCount = 0
-    for (j in 0 until entryCount) {
+    for (entryIndex in 0 until entryCount) {
       // draw only if the value is greater than zero
-      if (Math.abs(dataSet.getEntryForIndex(j).y) > Utils.FLOAT_EPSILON) {
+      if (Math.abs(dataSet.getEntryForIndex(entryIndex).y) > Utils.FLOAT_EPSILON) {
         visibleAngleCount++
       }
     }
     
     val sliceSpace = if (visibleAngleCount <= 1) 0f else getSliceSpace(dataSet)
     
-    for (j in 0 until entryCount) {
+    for (entryIndex in 0 until entryCount) {
       
-      val sliceAngle = drawAngles[j]
+      val sliceAngle = drawAngles[entryIndex]
       var innerRadius = userInnerRadius
       
-      val e = dataSet.getEntryForIndex(j)
+      val pieEntry = dataSet.getEntryForIndex(entryIndex)
       
       // draw only if the value is greater than zero
-      if (Math.abs(e.y) > Utils.FLOAT_EPSILON) {
+      if (Math.abs(pieEntry.y) > Utils.FLOAT_EPSILON) {
         
-        if (!mChart.needsHighlight(j)) {
+        if (!pieChart.needsHighlight(entryIndex)) {
           
           val accountForSliceSpacing = sliceSpace > 0f && sliceAngle <= 180f
           
-          mRenderPaint.color = dataSet.getColor(j)
+          mRenderPaint.color = dataSet.getColor(entryIndex)
           
           val sliceSpaceAngleOuter = if (visibleAngleCount == 1) 0f
           else sliceSpace / (Utils.FDEG2RAD * radius)
@@ -278,27 +228,26 @@ class BlinnnkPieChartRenderer(
             sweepAngleOuter = 0f
           }
           
-          mPathBuffer.reset()
+          pathBuffer.reset()
           
           val arcStartPointX = center.x + radius * Math.cos((startAngleOuter * Utils.FDEG2RAD).toDouble()).toFloat()
           val arcStartPointY = center.y + radius * Math.sin((startAngleOuter * Utils.FDEG2RAD).toDouble()).toFloat()
           
           if (sweepAngleOuter >= 360f && sweepAngleOuter % 360f <= Utils.FLOAT_EPSILON) {
             // Android is doing "mod 360"
-            mPathBuffer.addCircle(
+            pathBuffer.addCircle(
               center.x,
               center.y,
               radius,
               Path.Direction.CW
             )
           } else {
-            
-            mPathBuffer.moveTo(
+            pathBuffer.moveTo(
               arcStartPointX,
               arcStartPointY
             )
             
-            mPathBuffer.arcTo(
+            pathBuffer.arcTo(
               circleBox,
               startAngleOuter,
               sweepAngleOuter
@@ -306,7 +255,7 @@ class BlinnnkPieChartRenderer(
           }
           
           // API < 21 does not receive floats in addArc, but a RectF
-          mInnerRectBuffer.set(
+          innerRectBuffer.set(
             center.x - innerRadius,
             center.y - innerRadius,
             center.x + innerRadius,
@@ -314,7 +263,6 @@ class BlinnnkPieChartRenderer(
           )
           
           if (drawInnerArc && (innerRadius > 0f || accountForSliceSpacing)) {
-            
             if (accountForSliceSpacing) {
               var minSpacedRadius = calculateMinimumRadiusForSpacedSlice(
                 center,
@@ -328,10 +276,7 @@ class BlinnnkPieChartRenderer(
               
               if (minSpacedRadius < 0f) minSpacedRadius = -minSpacedRadius
               
-              innerRadius = Math.max(
-                innerRadius,
-                minSpacedRadius
-              )
+              innerRadius = Math.max(innerRadius, minSpacedRadius)
             }
             
             val sliceSpaceAngleInner = if (visibleAngleCount == 1 || innerRadius == 0f) 0f
@@ -345,7 +290,7 @@ class BlinnnkPieChartRenderer(
             
             if (sweepAngleOuter >= 360f && sweepAngleOuter % 360f <= Utils.FLOAT_EPSILON) {
               // Android is doing "mod 360"
-              mPathBuffer.addCircle(
+              pathBuffer.addCircle(
                 center.x,
                 center.y,
                 innerRadius,
@@ -353,13 +298,13 @@ class BlinnnkPieChartRenderer(
               )
             } else {
               
-              mPathBuffer.lineTo(
+              pathBuffer.lineTo(
                 center.x + innerRadius * Math.cos((endAngleInner * Utils.FDEG2RAD).toDouble()).toFloat(),
                 center.y + innerRadius * Math.sin((endAngleInner * Utils.FDEG2RAD).toDouble()).toFloat()
               )
               
-              mPathBuffer.arcTo(
-                mInnerRectBuffer,
+              pathBuffer.arcTo(
+                innerRectBuffer,
                 endAngleInner,
                 -sweepAngleInner
               )
@@ -384,13 +329,13 @@ class BlinnnkPieChartRenderer(
                 val arcEndPointX = center.x + sliceSpaceOffset * Math.cos((angleMiddle * Utils.FDEG2RAD).toDouble()).toFloat()
                 val arcEndPointY = center.y + sliceSpaceOffset * Math.sin((angleMiddle * Utils.FDEG2RAD).toDouble()).toFloat()
                 
-                mPathBuffer.lineTo(
+                pathBuffer.lineTo(
                   arcEndPointX,
                   arcEndPointY
                 )
                 
               } else {
-                mPathBuffer.lineTo(
+                pathBuffer.lineTo(
                   center.x,
                   center.y
                 )
@@ -399,10 +344,10 @@ class BlinnnkPieChartRenderer(
             
           }
           
-          mPathBuffer.close()
+          pathBuffer.close()
           
-          mBitmapCanvas!!.drawPath(
-            mPathBuffer,
+          canvas.drawPath(
+            pathBuffer,
             mRenderPaint
           )
         }
@@ -414,45 +359,44 @@ class BlinnnkPieChartRenderer(
     MPPointF.recycleInstance(center)
   }
   
-  override fun drawValues(c: Canvas) {
+  override fun drawValues(canvas: Canvas) {
     
-    val center = mChart.centerCircleBox
+    val center = pieChart.centerCircleBox
     
     // get whole the radius
-    val radius = mChart.radius
-    val rotationAngle = mChart.rotationAngle
-    val drawAngles = mChart.drawAngles
-    val absoluteAngles = mChart.absoluteAngles
+    val radius = pieChart.radius
+    val rotationAngle = pieChart.rotationAngle
+    val drawAngles = pieChart.drawAngles
+    val absoluteAngles = pieChart.absoluteAngles
     
     val phaseX = mAnimator.phaseX
     val phaseY = mAnimator.phaseY
     
-    val holeRadiusPercent = mChart.holeRadius / 100f
+    val holeRadiusPercent = pieChart.holeRadius / 100f
     var labelRadiusOffset = radius / 10f * 3.6f
     
-    if (mChart.isDrawHoleEnabled) {
+    if (pieChart.isDrawHoleEnabled) {
       labelRadiusOffset = (radius - radius * holeRadiusPercent) / 2f
     }
     
     val labelRadius = radius - labelRadiusOffset
     
-    val data = mChart.data
+    val data = pieChart.data
     val dataSets = data.dataSets
     
     val yValueSum = data.yValueSum
     
-    val drawEntryLabels = mChart.isDrawEntryLabelsEnabled
+    val drawEntryLabels = pieChart.isDrawEntryLabelsEnabled
     
     var angle: Float
-    var xIndex = 0
     
-    c.save()
+    canvas.save()
     
     val offset = Utils.convertDpToPixel(5f)
     
-    for (i in dataSets.indices) {
+    for (dataSetIndex in dataSets.indices) {
       
-      val dataSet = dataSets[i]
+      val dataSet = dataSets[dataSetIndex]
       
       val drawValues = dataSet.isDrawValuesEnabled
       
@@ -473,8 +417,7 @@ class BlinnnkPieChartRenderer(
       
       val entryCount = dataSet.entryCount
       
-      mValueLinePaint.color = dataSet.valueLineColor
-      mValueLinePaint.strokeWidth = Utils.convertDpToPixel(dataSet.valueLineWidth)
+      valueLinePaint.strokeWidth = Utils.convertDpToPixel(dataSet.valueLineWidth)
       
       val sliceSpace = getSliceSpace(dataSet)
       
@@ -482,24 +425,28 @@ class BlinnnkPieChartRenderer(
       iconsOffset.x = Utils.convertDpToPixel(iconsOffset.x)
       iconsOffset.y = Utils.convertDpToPixel(iconsOffset.y)
       
-      for (j in 0 until entryCount) {
+      for (entryIndex in 0 until entryCount) {
+  
+        valueLinePaint.color = dataSet.colors[entryIndex % entryCount]
         
-        val entry = dataSet.getEntryForIndex(j)
+        val entry = dataSet.getEntryForIndex(entryIndex)
+  
+        angle = if (entryIndex == 0) 0f
+        else {
+          absoluteAngles[entryIndex - 1] * phaseX
+        }
         
-        if (xIndex == 0) angle = 0f
-        else angle = absoluteAngles[xIndex - 1] * phaseX
-        
-        val sliceAngle = drawAngles[xIndex]
+        val sliceAngle = drawAngles[entryIndex]
         val sliceSpaceMiddleAngle = sliceSpace / (Utils.FDEG2RAD * labelRadius)
         
         // offset needed to center the drawn text in the slice
         val angleOffset = (sliceAngle - sliceSpaceMiddleAngle / 2f) / 2f
-        
-        angle = angle + angleOffset
+  
+        angle += angleOffset
         
         val transformedAngle = rotationAngle + angle * phaseY
         
-        val value = if (mChart.isUsePercentValuesEnabled) entry.y / yValueSum * 100f
+        val value = if (pieChart.isUsePercentValuesEnabled) entry.y / yValueSum * 100f
         else entry.y
         
         val sliceXBase = Math.cos((transformedAngle * Utils.FDEG2RAD).toDouble()).toFloat()
@@ -523,7 +470,7 @@ class BlinnnkPieChartRenderer(
           
           val line1Radius: Float
           
-          if (mChart.isDrawHoleEnabled) line1Radius = (radius - radius * holeRadiusPercent) * valueLinePart1OffsetPercentage + radius * holeRadiusPercent
+          if (pieChart.isDrawHoleEnabled) line1Radius = (radius - radius * holeRadiusPercent) * valueLinePart1OffsetPercentage + radius * holeRadiusPercent
           else line1Radius = radius * valueLinePart1OffsetPercentage
           
           val polyline2Width = if (dataSet.isValueLineVariableLength) labelRadius * valueLineLength2 * Math.abs(
@@ -539,7 +486,7 @@ class BlinnnkPieChartRenderer(
           val pt1x = labelRadius * (1 + valueLineLength1) * sliceXBase + center.x
           val pt1y = labelRadius * (1 + valueLineLength1) * sliceYBase + center.y
           
-          if (transformedAngle % 360.0 >= 90.0 && transformedAngle % 360.0 <= 270.0) {
+          if (transformedAngle % 360.0 in 90.0..270.0) {
             pt2x = pt1x - polyline2Width
             pt2y = pt1y
             
@@ -561,19 +508,19 @@ class BlinnnkPieChartRenderer(
           }
           
           if (dataSet.valueLineColor != ColorTemplate.COLOR_NONE) {
-            c.drawLine(
+            canvas.drawLine(
               pt0x,
               pt0y,
               pt1x,
               pt1y,
-              mValueLinePaint
+              valueLinePaint
             )
-            c.drawLine(
+            canvas.drawLine(
               pt1x,
               pt1y,
               pt2x,
               pt2y,
-              mValueLinePaint
+              valueLinePaint
             )
           }
           
@@ -581,19 +528,19 @@ class BlinnnkPieChartRenderer(
           if (drawXOutside && drawYOutside) {
             
             drawValue(
-              c,
+              canvas,
               formatter,
               value,
               entry,
               0,
               labelPtx,
               labelPty,
-              dataSet.getValueTextColor(j)
+              dataSet.getValueTextColor(entryIndex)
             )
             
-            if (j < data.entryCount && entry.label != null) {
+            if (entryIndex < data.entryCount && entry.label != null) {
               drawEntryLabel(
-                c,
+                canvas,
                 entry.label,
                 labelPtx,
                 labelPty + lineHeight
@@ -601,9 +548,9 @@ class BlinnnkPieChartRenderer(
             }
             
           } else if (drawXOutside) {
-            if (j < data.entryCount && entry.label != null) {
+            if (entryIndex < data.entryCount && entry.label != null) {
               drawEntryLabel(
-                c,
+                canvas,
                 entry.label,
                 labelPtx,
                 labelPty + lineHeight / 2f
@@ -612,14 +559,14 @@ class BlinnnkPieChartRenderer(
           } else if (drawYOutside) {
             
             drawValue(
-              c,
+              canvas,
               formatter,
               value,
               entry,
               0,
               labelPtx,
               labelPty + lineHeight / 2f,
-              dataSet.getValueTextColor(j)
+              dataSet.getValueTextColor(entryIndex)
             )
           }
         }
@@ -635,19 +582,19 @@ class BlinnnkPieChartRenderer(
           if (drawXInside && drawYInside) {
             
             drawValue(
-              c,
+              canvas,
               formatter,
               value,
               entry,
               0,
               x,
               y,
-              dataSet.getValueTextColor(j)
+              dataSet.getValueTextColor(entryIndex)
             )
             
-            if (j < data.entryCount && entry.label != null) {
+            if (entryIndex < data.entryCount && entry.label != null) {
               drawEntryLabel(
-                c,
+                canvas,
                 entry.label,
                 x,
                 y + lineHeight
@@ -655,9 +602,9 @@ class BlinnnkPieChartRenderer(
             }
             
           } else if (drawXInside) {
-            if (j < data.entryCount && entry.label != null) {
+            if (entryIndex < data.entryCount && entry.label != null) {
               drawEntryLabel(
-                c,
+                canvas,
                 entry.label,
                 x,
                 y + lineHeight / 2f
@@ -666,14 +613,14 @@ class BlinnnkPieChartRenderer(
           } else if (drawYInside) {
             
             drawValue(
-              c,
+              canvas,
               formatter,
               value,
               entry,
               0,
               x,
               y + lineHeight / 2f,
-              dataSet.getValueTextColor(j)
+              dataSet.getValueTextColor(entryIndex)
             )
           }
         }
@@ -687,7 +634,7 @@ class BlinnnkPieChartRenderer(
           y += iconsOffset.x
           
           Utils.drawImage(
-            c,
+            canvas,
             icon,
             x.toInt(),
             y.toInt(),
@@ -696,30 +643,30 @@ class BlinnnkPieChartRenderer(
           )
         }
         
-        xIndex++
+//        xIndex++
       }
       
       MPPointF.recycleInstance(iconsOffset)
     }
     MPPointF.recycleInstance(center)
-    c.restore()
+    canvas.restore()
   }
   
   /**
    * Draws an entry label at the specified position.
    *
-   * @param c
+   * @param canvas
    * @param label
    * @param x
    * @param y
    */
   protected fun drawEntryLabel(
-    c: Canvas,
+    canvas: Canvas,
     label: String,
     x: Float,
     y: Float
   ) {
-    c.drawText(
+    canvas.drawText(
       label,
       x,
       y,
@@ -727,33 +674,27 @@ class BlinnnkPieChartRenderer(
     )
   }
   
-  override fun drawExtras(c: Canvas) {
+  override fun drawExtras(canvas: Canvas) {
     // drawCircles(c);
-    drawHole(c)
-    c.drawBitmap(
-      mDrawBitmap!!.get()!!,
-      0f,
-      0f,
-      null
-    )
-    drawCenterText(c)
+    drawHole(canvas)
+    drawCenterText(canvas)
   }
   
   /**
    * draws the hole in the center of the chart and the transparent circle /
    * hole
    */
-  protected fun drawHole(c: Canvas) {
+  protected fun drawHole(canvas: Canvas) {
     
-    if (mChart.isDrawHoleEnabled && mBitmapCanvas != null) {
+    if (pieChart.isDrawHoleEnabled ) {
       
-      val radius = mChart.radius
-      val holeRadius = radius * (mChart.holeRadius / 100)
-      val center = mChart.centerCircleBox
+      val radius = pieChart.radius
+      val holeRadius = radius * (pieChart.holeRadius / 100)
+      val center = pieChart.centerCircleBox
       
       if (Color.alpha(paintHole.color) > 0) {
         // draw the hole-circle
-        mBitmapCanvas!!.drawCircle(
+        canvas.drawCircle(
           center.x,
           center.y,
           holeRadius,
@@ -762,29 +703,29 @@ class BlinnnkPieChartRenderer(
       }
       
       // only draw the circle if it can be seen (not covered by the hole)
-      if (Color.alpha(paintTransparentCircle.color) > 0 && mChart.transparentCircleRadius > mChart.holeRadius) {
+      if (Color.alpha(paintTransparentCircle.color) > 0 && pieChart.transparentCircleRadius > pieChart.holeRadius) {
         
         val alpha = paintTransparentCircle.alpha
-        val secondHoleRadius = radius * (mChart.transparentCircleRadius / 100)
+        val secondHoleRadius = radius * (pieChart.transparentCircleRadius / 100)
         
         paintTransparentCircle.alpha = (alpha.toFloat() * mAnimator.phaseX * mAnimator.phaseY).toInt()
         
         // draw the transparent-circle
-        mHoleCirclePath.reset()
-        mHoleCirclePath.addCircle(
+        holeCirclePath.reset()
+        holeCirclePath.addCircle(
           center.x,
           center.y,
           secondHoleRadius,
           Path.Direction.CW
         )
-        mHoleCirclePath.addCircle(
+        holeCirclePath.addCircle(
           center.x,
           center.y,
           holeRadius,
           Path.Direction.CCW
         )
-        mBitmapCanvas!!.drawPath(
-          mHoleCirclePath,
+        canvas.drawPath(
+          holeCirclePath,
           paintTransparentCircle
         )
         
@@ -799,30 +740,30 @@ class BlinnnkPieChartRenderer(
    * draws the description text in the center of the pie chart makes most
    * sense when center-hole is enabled
    */
-  protected fun drawCenterText(c: Canvas) {
+  protected fun drawCenterText(canvas: Canvas) {
     
-    val centerText = mChart.centerText
+    val centerText = pieChart.centerText
     
-    if (mChart.isDrawCenterTextEnabled && centerText != null) {
+    if (pieChart.isDrawCenterTextEnabled && centerText != null) {
       
-      val center = mChart.centerCircleBox
-      val offset = mChart.centerTextOffset
+      val center = pieChart.centerCircleBox
+      val offset = pieChart.centerTextOffset
       
       val x = center.x + offset.x
       val y = center.y + offset.y
       
-      val innerRadius = if (mChart.isDrawHoleEnabled && !mChart.isDrawSlicesUnderHoleEnabled) mChart.radius * (mChart.holeRadius / 100f)
-      else mChart.radius
+      val innerRadius = if (pieChart.isDrawHoleEnabled && !pieChart.isDrawSlicesUnderHoleEnabled) pieChart.radius * (pieChart.holeRadius / 100f)
+      else pieChart.radius
       
-      val holeRect = mRectBuffer[0]
+      val holeRect = rectBuffer[0]
       holeRect.left = x - innerRadius
       holeRect.top = y - innerRadius
       holeRect.right = x + innerRadius
       holeRect.bottom = y + innerRadius
-      val boundingRect = mRectBuffer[1]
+      val boundingRect = rectBuffer[1]
       boundingRect.set(holeRect)
       
-      val radiusPercent = mChart.centerTextRadiusPercent / 100f
+      val radiusPercent = pieChart.centerTextRadiusPercent / 100f
       if (radiusPercent > 0.0) {
         boundingRect.inset(
           (boundingRect.width() - boundingRect.width() * radiusPercent) / 2f,
@@ -830,16 +771,16 @@ class BlinnnkPieChartRenderer(
         )
       }
       
-      if (centerText != mCenterTextLastValue || boundingRect != mCenterTextLastBounds) {
+      if (centerText != centerTextLastValue || boundingRect != centerTextLastBounds) {
         
         // Next time we won't recalculate StaticLayout...
-        mCenterTextLastBounds.set(boundingRect)
-        mCenterTextLastValue = centerText
+        centerTextLastBounds.set(boundingRect)
+        centerTextLastValue = centerText
         
-        val width = mCenterTextLastBounds.width()
+        val width = centerTextLastBounds.width()
         
         // If width is 0, it will crash. Always have a minimum of 1
-        mCenterTextLayout = StaticLayout(
+        centerTextLayout = StaticLayout(
           centerText,
           0,
           centerText.length,
@@ -856,26 +797,26 @@ class BlinnnkPieChartRenderer(
       }
       
       //float layoutWidth = Utils.getStaticLayoutMaxWidth(mCenterTextLayout);
-      val layoutHeight = mCenterTextLayout!!.height.toFloat()
+      val layoutHeight = centerTextLayout!!.height.toFloat()
       
-      c.save()
+      canvas.save()
       if (Build.VERSION.SDK_INT >= 18) {
-        val path = mDrawCenterTextPathBuffer
+        val path = drawCenterTextPathBuffer
         path.reset()
         path.addOval(
           holeRect,
           Path.Direction.CW
         )
-        c.clipPath(path)
+        canvas.clipPath(path)
       }
       
-      c.translate(
+      canvas.translate(
         boundingRect.left,
         boundingRect.top + (boundingRect.height() - layoutHeight) / 2f
       )
-      mCenterTextLayout!!.draw(c)
+      centerTextLayout!!.draw(canvas)
       
-      c.restore()
+      canvas.restore()
       
       MPPointF.recycleInstance(center)
       MPPointF.recycleInstance(offset)
@@ -883,7 +824,7 @@ class BlinnnkPieChartRenderer(
   }
   
   override fun drawHighlighted(
-    c: Canvas,
+    canvas: Canvas,
     indices: Array<Highlight>
   ) {
     
@@ -891,17 +832,17 @@ class BlinnnkPieChartRenderer(
     val phaseY = mAnimator.phaseY
     
     var angle: Float
-    val rotationAngle = mChart.rotationAngle
+    val rotationAngle = pieChart.rotationAngle
     
-    val drawAngles = mChart.drawAngles
-    val absoluteAngles = mChart.absoluteAngles
-    val center = mChart.centerCircleBox
-    val radius = mChart.radius
-    val drawInnerArc = mChart.isDrawHoleEnabled && !mChart.isDrawSlicesUnderHoleEnabled
-    val userInnerRadius = if (drawInnerArc) radius * (mChart.holeRadius / 100f)
+    val drawAngles = pieChart.drawAngles
+    val absoluteAngles = pieChart.absoluteAngles
+    val center = pieChart.centerCircleBox
+    val radius = pieChart.radius
+    val drawInnerArc = pieChart.isDrawHoleEnabled && !pieChart.isDrawSlicesUnderHoleEnabled
+    val userInnerRadius = if (drawInnerArc) radius * (pieChart.holeRadius / 100f)
     else 0f
     
-    val highlightedCircleBox = mDrawHighlightedRectF
+    val highlightedCircleBox = drawHighlightedRectF
     highlightedCircleBox.set(
       0f,
       0f,
@@ -909,30 +850,30 @@ class BlinnnkPieChartRenderer(
       0f
     )
     
-    for (i in indices.indices) {
+    for (indicesIndex in indices.indices) {
       
       // get the index to highlight
-      val index = indices[i].x.toInt()
+      val index = indices[indicesIndex].x.toInt()
       
       if (index >= drawAngles.size) continue
       
-      val set = mChart.data.getDataSetByIndex(
-        indices[i].dataSetIndex
+      val set = pieChart.data.getDataSetByIndex(
+        indices[indicesIndex].dataSetIndex
       )
       
       if (set == null || !set.isHighlightEnabled) continue
       
       val entryCount = set.entryCount
       var visibleAngleCount = 0
-      for (j in 0 until entryCount) {
+      for (entryIndex in 0 until entryCount) {
         // draw only if the value is greater than zero
-        if (Math.abs(set.getEntryForIndex(j).y) > Utils.FLOAT_EPSILON) {
+        if (Math.abs(set.getEntryForIndex(entryIndex).y) > Utils.FLOAT_EPSILON) {
           visibleAngleCount++
         }
       }
-      
-      if (index == 0) angle = 0f
-      else angle = absoluteAngles[index - 1] * phaseX
+  
+      angle = if (index == 0) 0f
+      else absoluteAngles[index - 1] * phaseX
       
       val sliceSpace = if (visibleAngleCount <= 1) 0f else set.sliceSpace
       
@@ -941,7 +882,7 @@ class BlinnnkPieChartRenderer(
       
       val shift = set.selectionShift
       val highlightedRadius = radius + shift
-      highlightedCircleBox.set(mChart.circleBox)
+      highlightedCircleBox.set(pieChart.circleBox)
       highlightedCircleBox.inset(
         -shift,
         -shift
@@ -969,11 +910,11 @@ class BlinnnkPieChartRenderer(
         sweepAngleShifted = 0f
       }
       
-      mPathBuffer.reset()
+      pathBuffer.reset()
       
       if (sweepAngleOuter >= 360f && sweepAngleOuter % 360f <= Utils.FLOAT_EPSILON) {
         // Android is doing "mod 360"
-        mPathBuffer.addCircle(
+        pathBuffer.addCircle(
           center.x,
           center.y,
           highlightedRadius,
@@ -981,12 +922,12 @@ class BlinnnkPieChartRenderer(
         )
       } else {
         
-        mPathBuffer.moveTo(
+        pathBuffer.moveTo(
           center.x + highlightedRadius * Math.cos((startAngleShifted * Utils.FDEG2RAD).toDouble()).toFloat(),
           center.y + highlightedRadius * Math.sin((startAngleShifted * Utils.FDEG2RAD).toDouble()).toFloat()
         )
         
-        mPathBuffer.arcTo(
+        pathBuffer.arcTo(
           highlightedCircleBox,
           startAngleShifted,
           sweepAngleShifted
@@ -1007,7 +948,7 @@ class BlinnnkPieChartRenderer(
       }
       
       // API < 21 does not receive floats in addArc, but a RectF
-      mInnerRectBuffer.set(
+      innerRectBuffer.set(
         center.x - innerRadius,
         center.y - innerRadius,
         center.x + innerRadius,
@@ -1038,7 +979,7 @@ class BlinnnkPieChartRenderer(
         
         if (sweepAngleOuter >= 360f && sweepAngleOuter % 360f <= Utils.FLOAT_EPSILON) {
           // Android is doing "mod 360"
-          mPathBuffer.addCircle(
+          pathBuffer.addCircle(
             center.x,
             center.y,
             innerRadius,
@@ -1046,13 +987,13 @@ class BlinnnkPieChartRenderer(
           )
         } else {
           
-          mPathBuffer.lineTo(
+          pathBuffer.lineTo(
             center.x + innerRadius * Math.cos((endAngleInner * Utils.FDEG2RAD).toDouble()).toFloat(),
             center.y + innerRadius * Math.sin((endAngleInner * Utils.FDEG2RAD).toDouble()).toFloat()
           )
           
-          mPathBuffer.arcTo(
-            mInnerRectBuffer,
+          pathBuffer.arcTo(
+            innerRectBuffer,
             endAngleInner,
             -sweepAngleInner
           )
@@ -1067,14 +1008,14 @@ class BlinnnkPieChartRenderer(
             val arcEndPointX = center.x + sliceSpaceRadius * Math.cos((angleMiddle * Utils.FDEG2RAD).toDouble()).toFloat()
             val arcEndPointY = center.y + sliceSpaceRadius * Math.sin((angleMiddle * Utils.FDEG2RAD).toDouble()).toFloat()
             
-            mPathBuffer.lineTo(
+            pathBuffer.lineTo(
               arcEndPointX,
               arcEndPointY
             )
             
           } else {
             
-            mPathBuffer.lineTo(
+            pathBuffer.lineTo(
               center.x,
               center.y
             )
@@ -1084,10 +1025,10 @@ class BlinnnkPieChartRenderer(
         
       }
       
-      mPathBuffer.close()
+      pathBuffer.close()
       
-      mBitmapCanvas!!.drawPath(
-        mPathBuffer,
+      canvas.drawPath(
+        pathBuffer,
         mRenderPaint
       )
     }
@@ -1098,27 +1039,27 @@ class BlinnnkPieChartRenderer(
   /**
    * This gives all pie-slices a rounded edge.
    *
-   * @param c
+   * @param canvas
    */
-  protected fun drawRoundedSlices(c: Canvas) {
+  protected fun drawRoundedSlices(canvas: Canvas) {
     
-    if (!mChart.isDrawRoundedSlicesEnabled) return
+    if (!pieChart.isDrawRoundedSlicesEnabled) return
     
-    val dataSet = mChart.data.dataSet
+    val dataSet = pieChart.data.dataSet
     
     if (!dataSet.isVisible) return
     
     val phaseX = mAnimator.phaseX
     val phaseY = mAnimator.phaseY
     
-    val center = mChart.centerCircleBox
-    val r = mChart.radius
+    val center = pieChart.centerCircleBox
+    val r = pieChart.radius
     
     // calculate the radius of the "slice-circle"
-    val circleRadius = (r - r * mChart.holeRadius / 100f) / 2f
+    val circleRadius = (r - r * pieChart.holeRadius / 100f) / 2f
     
-    val drawAngles = mChart.drawAngles
-    var angle = mChart.rotationAngle
+    val drawAngles = pieChart.drawAngles
+    var angle = pieChart.rotationAngle
     
     for (j in 0 until dataSet.entryCount) {
       
@@ -1133,7 +1074,7 @@ class BlinnnkPieChartRenderer(
         val y = ((r - circleRadius) * Math.sin(Math.toRadians(((angle + sliceAngle) * phaseY).toDouble())) + center.y).toFloat()
         
         mRenderPaint.color = dataSet.getColor(j)
-        mBitmapCanvas!!.drawCircle(
+        canvas.drawCircle(
           x,
           y,
           circleRadius,
@@ -1146,18 +1087,4 @@ class BlinnnkPieChartRenderer(
     MPPointF.recycleInstance(center)
   }
   
-  /**
-   * Releases the drawing bitmap. This should be called when [LineChart.onDetachedFromWindow].
-   */
-  fun releaseBitmap() {
-    if (mBitmapCanvas != null) {
-      mBitmapCanvas!!.setBitmap(null)
-      mBitmapCanvas = null
-    }
-    if (mDrawBitmap != null) {
-      mDrawBitmap!!.get()!!.recycle()
-      mDrawBitmap!!.clear()
-      mDrawBitmap = null
-    }
-  }
 }

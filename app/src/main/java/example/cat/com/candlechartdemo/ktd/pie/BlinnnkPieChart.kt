@@ -9,7 +9,7 @@ import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.PercentFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
-import java.util.ArrayList
+import kotlin.collections.ArrayList
 
 /**
  * @date: 2018/9/18.
@@ -148,8 +148,9 @@ class BlinnnkPieChart(context: Context) : PieChart(context) {
         )
       )
     }
-    
     entries.add(PieEntry(0f, ""))
+    
+    val colors = arrayListOf( Color.YELLOW, Color.GREEN, Color.RED, Color.BLUE, Color.GRAY)
     
     val dataSet = PieDataSet(
       entries,
@@ -157,22 +158,6 @@ class BlinnnkPieChart(context: Context) : PieChart(context) {
     )
     dataSet.sliceSpace = 3f
     dataSet.selectionShift = 5f
-    
-    // add a lot of colors
-    
-    val colors = ArrayList<Int>()
-    
-    for (c in ColorTemplate.VORDIPLOM_COLORS) colors.add(c)
-    
-    for (c in ColorTemplate.JOYFUL_COLORS) colors.add(c)
-    
-    for (c in ColorTemplate.COLORFUL_COLORS) colors.add(c)
-    
-    for (c in ColorTemplate.LIBERTY_COLORS) colors.add(c)
-    
-    for (c in ColorTemplate.PASTEL_COLORS) colors.add(c)
-    
-    colors.add(ColorTemplate.getHoloBlue())
     
     dataSet.colors = colors
     dataSet.sliceSpace = 0f // 每一块之间的间隙
