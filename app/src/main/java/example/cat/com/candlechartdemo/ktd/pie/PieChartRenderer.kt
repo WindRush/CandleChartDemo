@@ -26,7 +26,7 @@ import com.github.mikephil.charting.utils.ViewPortHandler
  * @author: yanglihai
  * @description:
  */
-class BlinnnkPieChartRenderer(
+class PieChartRenderer(
   private var pieChart: PieChart,
   animator: ChartAnimator,
   viewPortHandler: ViewPortHandler
@@ -41,7 +41,7 @@ class BlinnnkPieChartRenderer(
    */
   var paintHole: Paint
   var paintTransparentCircle: Paint
-  protected var valueLinePaint: Paint
+  private var valueLinePaint: Paint
   
   /**
    * paint object for the text that can be displayed in the center of the

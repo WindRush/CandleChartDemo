@@ -186,7 +186,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    */
   var centerTextRadiusPercent = 100f
   
-  protected var mMaxAngle = 360f
+  var mMaxAngle = 360f
   
   /**
    * returns the center of the circlebox
@@ -251,7 +251,7 @@ open class PieChart : PieRadarChartBase<PieData> {
   override fun init() {
     super.init()
     
-    mRenderer = BlinnnkPieChartRenderer(
+    mRenderer = PieChartRenderer(
       this,
       mAnimator,
       mViewPortHandler
@@ -293,20 +293,20 @@ open class PieChart : PieRadarChartBase<PieData> {
     val diameter = diameter
     val radius = diameter / 2f
     
-    val c = centerOffsets
+    val center = centerOffsets
     
     val shift = mData.dataSet.selectionShift
     
     // create the circle box that will contain the pie-chart (the bounds of
     // the pie-chart)
     circleBox.set(
-      c.x - radius + shift,
-      c.y - radius + shift,
-      c.x + radius - shift,
-      c.y + radius - shift
+      center.x - radius + shift,
+      center.y - radius + shift,
+      center.x + radius - shift,
+      center.y + radius - shift
     )
     
-    MPPointF.recycleInstance(c)
+    MPPointF.recycleInstance(center)
   }
   
   override fun calcMinMax() {
@@ -316,15 +316,15 @@ open class PieChart : PieRadarChartBase<PieData> {
   override fun getMarkerPosition(highlight: Highlight): FloatArray {
     
     val center = centerCircleBox
-    var r = radius
+    var radius = this.radius
     
-    var off = r / 10f * 3.6f
+    var off = radius / 10f * 3.6f
     
     if (isDrawHoleEnabled) {
-      off = (r - r / 100f * holeRadius) / 2f
+      off = (radius - radius / 100f * holeRadius) / 2f
     }
     
-    r -= off // offset to keep things inside the chart
+    radius -= off // offset to keep things inside the chart
     
     val rotationAngle = rotationAngle
     
@@ -334,14 +334,11 @@ open class PieChart : PieRadarChartBase<PieData> {
     val offset = drawAngles[entryIndex] / 2
     
     // calculate the text position
-    val x = (r * Math.cos(Math.toRadians(((rotationAngle + absoluteAngles[entryIndex] - offset) * mAnimator.phaseY).toDouble())) + center.x).toFloat()
-    val y = (r * Math.sin(Math.toRadians(((rotationAngle + absoluteAngles[entryIndex] - offset) * mAnimator.phaseY).toDouble())) + center.y).toFloat()
+    val x = (radius * Math.cos(Math.toRadians(((rotationAngle + absoluteAngles[entryIndex] - offset) * mAnimator.phaseY).toDouble())) + center.x).toFloat()
+    val y = (radius * Math.sin(Math.toRadians(((rotationAngle + absoluteAngles[entryIndex] - offset) * mAnimator.phaseY).toDouble())) + center.y).toFloat()
     
     MPPointF.recycleInstance(center)
-    return floatArrayOf(
-      x,
-      y
-    )
+    return floatArrayOf(x, y)
   }
   
   /**
@@ -370,26 +367,23 @@ open class PieChart : PieRadarChartBase<PieData> {
     
     val dataSets = mData.dataSets
     
-    var cnt = 0
-    
-    for (i in 0 until mData.dataSetCount) {
+    for (dataSetIndex in 0 until mData.dataSetCount) {
       
-      val set = dataSets[i]
+      val set = dataSets[dataSetIndex]
       
-      for (j in 0 until set.entryCount) {
+      for (entryIndex in 0 until set.entryCount) {
         
-        drawAngles[cnt] = calcAngle(
-          Math.abs(set.getEntryForIndex(j).y),
+        drawAngles[entryIndex] = calcAngle(
+          Math.abs(set.getEntryForIndex(entryIndex).y),
           yValueSum
         )
         
-        if (cnt == 0) {
-          absoluteAngles[cnt] = drawAngles[cnt]
+        if (entryIndex == 0) {
+          absoluteAngles[entryIndex] = drawAngles[entryIndex]
         } else {
-          absoluteAngles[cnt] = absoluteAngles[cnt - 1] + drawAngles[cnt]
+          absoluteAngles[entryIndex] = absoluteAngles[entryIndex - 1] + drawAngles[entryIndex]
         }
         
-        cnt++
       }
     }
     
@@ -406,10 +400,10 @@ open class PieChart : PieRadarChartBase<PieData> {
     // no highlight
     if (!valuesToHighlight()) return false
     
-    for (i in mIndicesToHighlight.indices)
+    for (indecieIndex in mIndicesToHighlight.indices)
     
     // check if the xvalue for the given dataset needs highlight
-      if (mIndicesToHighlight[i].x.toInt() == index) return true
+      if (mIndicesToHighlight[indecieIndex].x.toInt() == index) return true
     
     return false
   }
@@ -443,8 +437,8 @@ open class PieChart : PieRadarChartBase<PieData> {
     // take the current angle of the chart into consideration
     val a = Utils.getNormalizedAngle(angle - rotationAngle)
     
-    for (i in absoluteAngles.indices) {
-      if (absoluteAngles[i] > a) return i
+    for (index in absoluteAngles.indices) {
+      if (absoluteAngles[index] > a) return index
     }
     
     return -1 // return -1 if no index found
@@ -460,12 +454,12 @@ open class PieChart : PieRadarChartBase<PieData> {
     
     val dataSets = mData.dataSets
     
-    for (i in dataSets.indices) {
-      if (dataSets[i].getEntryForXValue(
+    for (index in dataSets.indices) {
+      if (dataSets[index].getEntryForXValue(
           xIndex.toFloat(),
           java.lang.Float.NaN
         ) != null
-      ) return i
+      ) return index
     }
     
     return -1
@@ -478,7 +472,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param color
    */
   fun setHoleColor(color: Int) {
-    (mRenderer as BlinnnkPieChartRenderer).paintHole.color = color
+    (mRenderer as PieChartRenderer).paintHole.color = color
   }
   
   /**
@@ -520,7 +514,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param t
    */
   fun setCenterTextTypeface(t: Typeface) {
-    (mRenderer as BlinnnkPieChartRenderer).paintCenterText.typeface = t
+    (mRenderer as PieChartRenderer).paintCenterText.typeface = t
   }
   
   /**
@@ -529,7 +523,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param sizeDp
    */
   fun setCenterTextSize(sizeDp: Float) {
-    (mRenderer as BlinnnkPieChartRenderer).paintCenterText.textSize = Utils.convertDpToPixel(sizeDp)
+    (mRenderer as PieChartRenderer).paintCenterText.textSize = Utils.convertDpToPixel(sizeDp)
   }
   
   /**
@@ -538,7 +532,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param sizePixels
    */
   fun setCenterTextSizePixels(sizePixels: Float) {
-    (mRenderer as? BlinnnkPieChartRenderer)?.paintCenterText?.textSize = sizePixels
+    (mRenderer as? PieChartRenderer)?.paintCenterText?.textSize = sizePixels
   }
   
   /**
@@ -561,7 +555,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param color
    */
   fun setCenterTextColor(color: Int) {
-    (mRenderer as? BlinnnkPieChartRenderer)?.paintCenterText?.color = color
+    (mRenderer as? PieChartRenderer)?.paintCenterText?.color = color
   }
   
   /**
@@ -571,7 +565,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    */
   fun setTransparentCircleColor(color: Int) {
     
-    val p = (mRenderer as? BlinnnkPieChartRenderer)?.paintTransparentCircle
+    val p = (mRenderer as? PieChartRenderer)?.paintTransparentCircle
     p?.apply {
       this.color = color
     }
@@ -586,7 +580,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param alpha 0-255
    */
   fun setTransparentCircleAlpha(alpha: Int) {
-    (mRenderer as? BlinnnkPieChartRenderer)?.paintTransparentCircle?.alpha = alpha
+    (mRenderer as? PieChartRenderer)?.paintTransparentCircle?.alpha = alpha
   }
   
   /**
@@ -615,7 +609,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param color
    */
   fun setEntryLabelColor(color: Int) {
-    (mRenderer as? BlinnnkPieChartRenderer)?.paintEntryLabels?.color = color
+    (mRenderer as? PieChartRenderer)?.paintEntryLabels?.color = color
   }
   
   /**
@@ -624,7 +618,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param tf
    */
   fun setEntryLabelTypeface(tf: Typeface) {
-    (mRenderer as? BlinnnkPieChartRenderer)?.paintEntryLabels?.typeface = tf
+    (mRenderer as? PieChartRenderer)?.paintEntryLabels?.typeface = tf
   }
   
   /**
@@ -633,7 +627,7 @@ open class PieChart : PieRadarChartBase<PieData> {
    * @param size
    */
   fun setEntryLabelTextSize(size: Float) {
-    (mRenderer as? BlinnnkPieChartRenderer)?.paintEntryLabels?.textSize = Utils.convertDpToPixel(size)
+    (mRenderer as? PieChartRenderer)?.paintEntryLabels?.textSize = Utils.convertDpToPixel(size)
   }
   
   /**
@@ -646,12 +640,4 @@ open class PieChart : PieRadarChartBase<PieData> {
   fun setUsePercentValues(enabled: Boolean) {
     isUsePercentValuesEnabled = enabled
   }
-  
-//  override fun onDetachedFromWindow() {
-//    // releases the bitmap in the renderer to avoid oom error
-//    if (mRenderer != null && mRenderer is BlinnnkPieChartRenderer) {
-//      (mRenderer as? BlinnnkPieChartRenderer)?.releaseBitmap()
-//    }
-//    super.onDetachedFromWindow()
-//  }
 }

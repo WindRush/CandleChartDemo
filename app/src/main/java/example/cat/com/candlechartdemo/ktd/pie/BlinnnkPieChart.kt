@@ -21,7 +21,7 @@ class BlinnnkPieChart(context: Context) : PieChart(context) {
   
   override fun init() {
     super.init()
-    mRenderer = BlinnnkPieChartRenderer(
+    mRenderer = PieChartRenderer(
       this,
       mAnimator,
       mViewPortHandler
